@@ -1,11 +1,14 @@
 package com.example.gaudiy_did_android_sdk
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 
 class MainActivity : AppCompatActivity() {
 
@@ -17,6 +20,31 @@ class MainActivity : AppCompatActivity() {
         findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
+        }
+
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        val appLinkAction: String? = intent?.action
+        val appLinkData: Uri? = intent?.data
+        showDeepLinkOffer(appLinkAction, appLinkData)
+    }
+
+    private fun showDeepLinkOffer(appLinkAction: String?, appLinkData: Uri?) {
+        // 1
+        if (Intent.ACTION_VIEW == appLinkAction && appLinkData != null) {
+            // 2
+            val promotionCode = appLinkData.getQueryParameter("code")
+            if (promotionCode.isNullOrBlank().not()) {
+                activityPromoBinding.discountGroup.visibility = View.VISIBLE
+                activityPromoBinding.tvPromoCode.text = promotionCode
+                // 3
+                activityPromoBinding.btnClaimOffer.setOnClickListener {
+                    activityPromoBinding.tvOfferClaimed.visibility = View.VISIBLE
+                }
+            } else {
+                activityPromoBinding.discountGroup.visibility = View.GONE
+            }
         }
     }
 

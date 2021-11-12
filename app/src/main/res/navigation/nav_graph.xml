@@ -4,7 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/FirstFragment">
+<!--    startDestination が flagment 最初のフラグメント -->
 
+<!--    name に FirstFragment.kt をかく-->
     <fragment
         android:id="@+id/FirstFragment"
         android:name="com.example.gaudiy_did_android_sdk.FirstFragment"

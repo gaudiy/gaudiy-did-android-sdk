@@ -32,17 +32,17 @@ class FirstFragment : Fragment() {
         didButton = view.findViewById<Button>(R.id.button_first);
 
         didButton.setOnClickListener {
-            Toast.makeText(context, "Hello from FirstFragment", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "DID認証画面", Toast.LENGTH_SHORT).show()
 
             // 1. middleman に リクエストを詰める
             // 2. イベントリスナーを待機(deep link)
             // 3. クエリパラメーターから did を取得
             val openURL = Intent(android.content.Intent.ACTION_VIEW)
             // TODO: IP ごとに URL を定義できるようなインターフェースにする
-            openURL.data = Uri.parse("https://test.auth.tif-community.com/top")
+            openURL.data = Uri.parse("https://google.com")
             startActivity(openURL)
 
-            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
+//            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
         }
     }
 }

@@ -9,20 +9,23 @@ import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.Button
+import android.widget.TextView
+import android.widget.Toast
 
-class MainActivity : AppCompatActivity() {
+class ResultActivity : AppCompatActivity() {
+    private lateinit var responseDid: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_result)
+        val data: Uri? = intent?.data
+        responseDid = data?.getQueryParameter("did").toString()
 
-        // 利用する layout を指定
-        setContentView(R.layout.activity_main)
-        setSupportActionBar(findViewById(R.id.toolbar))
+        val text = findViewById<View>(R.id.resultDid) as TextView
+        text.setText(responseDid)
 
-        findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
-        }
+        println("result did: ${responseDid}\n");
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

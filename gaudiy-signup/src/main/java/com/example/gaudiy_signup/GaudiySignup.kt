@@ -1,16 +1,21 @@
 package com.gaudiy.gaudiy_did
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import androidx.annotation.Keep
 import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
-import androidx.fragment.app.FragmentActivity
+//import androidx.fragment.app.Fragment
+//import androidx.fragment.app.FragmentActivity
+//import androidx.lifecycle.ViewModel
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+//import androidx.lifecycle.lifecycleScope
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
@@ -18,13 +23,14 @@ import kotlinx.serialization.json.Json
 import kotlinx.coroutines.*
 
 class GaudiySignup {
-    private lateinit var ctx:FragmentActivity
-    fun setController(ctx: FragmentActivity) {
-        this.ctx = ctx
-        println(ctx)
-    }
+//    private lateinit var context:Context
+//    fun setController(context: Context) {
+//        this.context = context
+//        println(context)
+//    }
 
     @Serializable
+    @Keep
     data class DIDSignUpRequest (
         val serviceUserId: String,
         val apiKey: String,
@@ -85,10 +91,12 @@ class GaudiySignup {
     }
 
     @Serializable
+    @Keep
     data class SignUpResponseData (
         val executionId: String
     )
     @Serializable
+    @Keep
     data class SignUpResponse (
         var data: SignUpResponseData,
         val code: Int
@@ -105,18 +113,19 @@ class GaudiySignup {
     /**
      * DID連携リクエスト処理を行うメソッド。
      *
+     * @params context Context
      * @param apiKey
      * @param serviceUserId
      * @param redirectSchema
      * @param siteUrl authgatewaySiteUrl
      */
     @UiThread
-    fun asyncExecute(apiKey: String, serviceUserId: String, redirectSchema: String, siteUrl: String) {
+    fun asyncExecute(context: Context, apiKey: String, serviceUserId: String, redirectSchema: String, siteUrl: String) {
         GlobalScope.launch {
             val result = backgroundTaskRunner(apiKey, serviceUserId, redirectSchema)
             val openURL = Intent(Intent.ACTION_VIEW)
             openURL.data = Uri.parse("${siteUrl}?exId=${result}")
-            ctx.startActivity(openURL)
+            context.startActivity(openURL)
         }
     }
 }

@@ -7,28 +7,20 @@ import android.util.Log
 import androidx.annotation.Keep
 import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
-//import androidx.fragment.app.Fragment
-//import androidx.fragment.app.FragmentActivity
-//import androidx.lifecycle.ViewModel
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
-//import androidx.lifecycle.lifecycleScope
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.coroutines.*
 
-class GaudiySignup {
-//    private lateinit var context:Context
-//    fun setController(context: Context) {
-//        this.context = context
-//        println(context)
-//    }
+val VERIFICATION_API_KEY = "ak_3ch89dsedpa55532"
 
+class GaudiySignup {
     @Serializable
     @Keep
     data class DIDSignUpRequest (
@@ -46,15 +38,13 @@ class GaudiySignup {
     val ORIGIN = "androidBrowser"
 
     @WorkerThread
-    private suspend fun backgroundTaskRunner(apiKey: String, serviceUserId: String, redirectSchema: String): Any {
+    private suspend fun backgroundTaskRunner(apiKey: String, serviceUserId: String, redirectSchema: String, failedCallback: () -> Void): Any {
         val returnVal = withContext(Dispatchers.IO) {
             var result = ""
             val payload = DIDSignUpRequest(serviceUserId, apiKey, redirectSchema, ORIGIN)
             val string = Json.encodeToString(payload)
             val bodyData = string.toByteArray()
-
-            // TODO: middleman の エンドポイントを環境変数ごとに変える
-            val url = URL("https://middleman-r2cu5dszea-an.a.run.app/usecases/sign_up/execution_id")
+            val url = URL(getMiddlemanEndpoint(apiKey) + "/usecases/sign_up/execution_id")
             val connection = url.openConnection() as HttpURLConnection
 
             try {
@@ -82,12 +72,23 @@ class GaudiySignup {
                 Json.decodeFromString<SignUpResponse>(result).data.executionId
             } catch (exception: Exception) {
                 Log.e("Error", exception.toString())
+
+                failedCallback()
             } finally {
                 connection.disconnect()
             }
         }
 
         return returnVal
+    }
+
+    private fun getMiddlemanEndpoint(apiKey: String): String {
+        val isProduction = apiKey.startsWith("ak_") && apiKey != VERIFICATION_API_KEY;
+        if(isProduction){
+            return "https://middleman-txib6zhhnq-an.a.run.app"
+        };
+
+        return "https://middleman-r2cu5dszea-an.a.run.app"
     }
 
     @Serializable
@@ -120,9 +121,9 @@ class GaudiySignup {
      * @param siteUrl authgatewaySiteUrl
      */
     @UiThread
-    fun asyncExecute(context: Context, apiKey: String, serviceUserId: String, redirectSchema: String, siteUrl: String) {
+    fun asyncExecute(context: Context, apiKey: String, serviceUserId: String, redirectSchema: String, siteUrl: String, failedCallback: ()-> Void) {
         GlobalScope.launch {
-            val result = backgroundTaskRunner(apiKey, serviceUserId, redirectSchema)
+            val result = backgroundTaskRunner(apiKey, serviceUserId, redirectSchema, failedCallback)
             val openURL = Intent(Intent.ACTION_VIEW)
             openURL.data = Uri.parse("${siteUrl}?exId=${result}")
             context.startActivity(openURL)

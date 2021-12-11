@@ -19,6 +19,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.coroutines.*
 
 val VERIFICATION_API_KEY = "ak_3ch89dsedpa55532"
+val FAILED_REQUEST = "failed"
 
 class GaudiySignup {
     @Serializable
@@ -38,7 +39,7 @@ class GaudiySignup {
     val ORIGIN = "androidBrowser"
 
     @WorkerThread
-    private suspend fun backgroundTaskRunner(apiKey: String, serviceUserId: String, redirectSchema: String, failedCallback: () -> Void): Any {
+    private suspend fun backgroundTaskRunner(apiKey: String, serviceUserId: String, redirectSchema: String, failedCallback: () -> Void): String {
         val returnVal = withContext(Dispatchers.IO) {
             var result = ""
             val payload = DIDSignUpRequest(serviceUserId, apiKey, redirectSchema, ORIGIN)
@@ -71,9 +72,9 @@ class GaudiySignup {
 
                 Json.decodeFromString<SignUpResponse>(result).data.executionId
             } catch (exception: Exception) {
-                Log.e("Error", exception.toString())
-
                 failedCallback()
+
+                FAILED_REQUEST
             } finally {
                 connection.disconnect()
             }
@@ -88,7 +89,7 @@ class GaudiySignup {
             return "https://middleman-txib6zhhnq-an.a.run.app"
         };
 
-        return "https://middleman-r2cu5dszea-an.a.run.app"
+        return "https://middleman-dr2cbltv5a-an.a.run.app"
     }
 
     @Serializable
@@ -124,6 +125,10 @@ class GaudiySignup {
     fun asyncExecute(context: Context, apiKey: String, serviceUserId: String, redirectSchema: String, siteUrl: String, failedCallback: ()-> Void) {
         GlobalScope.launch {
             val result = backgroundTaskRunner(apiKey, serviceUserId, redirectSchema, failedCallback)
+            if(result.equals(FAILED_REQUEST)) {
+                return@launch
+            }
+
             val openURL = Intent(Intent.ACTION_VIEW)
             openURL.data = Uri.parse("${siteUrl}?exId=${result}")
             context.startActivity(openURL)
